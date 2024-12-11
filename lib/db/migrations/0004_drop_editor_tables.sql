@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS "Suggestion";
+DROP TABLE IF EXISTS "Document"; 
