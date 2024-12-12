@@ -1,3 +1,5 @@
+import type { ToolInvocation, MessageAnnotation } from 'ai';
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';
