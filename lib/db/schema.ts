@@ -64,3 +64,10 @@ export const vote = pgTable(
 );
 
 export type Vote = InferSelectModel<typeof vote>;
+
+export interface SaveChatParams {
+  id: string;
+  userId: string;
+  title: string;
+  modelId: string;
+}

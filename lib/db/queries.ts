@@ -47,17 +47,20 @@ export async function saveChat({
   id,
   userId,
   title,
+  modelId,
 }: {
   id: string;
   userId: string;
   title: string;
+  modelId: string;
 }) {
   try {
     return await db.insert(chat).values({
       id,
-      createdAt: new Date(),
       userId,
       title,
+      modelId,
+      createdAt: new Date(),
     });
   } catch (error) {
     console.error('Failed to save chat in database');
