@@ -5,16 +5,9 @@ import { Chat } from '@/components/chat';
 import { getMessagesByChatId } from '@/lib/db/queries';
 import { Metadata } from 'next';
 
-// Define the page params type
-type PageParams = {
-  id: string;
-}
-
-// Define the page component
-export default async function ChatPage({
-  params,
-}: {
-  params: PageParams;
+// Remove custom type and use inline type
+export default async function ChatPage(props: {
+  params: { id: string };
 }) {
   const session = await auth();
   
@@ -22,11 +15,11 @@ export default async function ChatPage({
     redirect('/login');
   }
 
-  const messages = await getMessagesByChatId({ id: params.id }) as Message[];
+  const messages = await getMessagesByChatId({ id: props.params.id }) as Message[];
 
   return (
     <Chat 
-      id={params.id} 
+      id={props.params.id} 
       initialMessages={messages}
       selectedModelId="claude-3-sonnet"
       selectedVisibilityType="private"
@@ -35,13 +28,10 @@ export default async function ChatPage({
   );
 }
 
-// Define metadata generation
-export async function generateMetadata({
-  params,
-}: {
-  params: PageParams;
+export async function generateMetadata(props: {
+  params: { id: string };
 }): Promise<Metadata> {
   return {
-    title: `Chat ${params.id}`,
+    title: `Chat ${props.params.id}`,
   };
 } 
