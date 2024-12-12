@@ -4,14 +4,15 @@ import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getMessagesByChatId } from '@/lib/db/queries';
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+type Props = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default async function ChatPage({ params }: PageProps) {
+export default async function ChatPage({
+  params,
+  searchParams,
+}: Props) {
   const session = await auth();
   
   if (!session?.user) {
