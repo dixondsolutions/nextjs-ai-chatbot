@@ -109,17 +109,19 @@ export async function saveMessages({ messages }: { messages: Array<Message> }) {
   }
 }
 
-export async function getMessagesByChatId({ id }: { id: string }) {
-  try {
-    return await db
-      .select()
-      .from(message)
-      .where(eq(message.chatId, id))
-      .orderBy(asc(message.createdAt));
-  } catch (error) {
-    console.error('Failed to get messages by chat id from database', error);
-    throw error;
-  }
+export async function getMessagesByChatId({ id }: { id: string }): Promise<Message[]> {
+  const messages = await db
+    .select()
+    .from(message)
+    .where(eq(message.chatId, id))
+    .orderBy(asc(message.createdAt));
+
+  return messages.map(message => ({
+    ...message,
+    content: String(message.content),
+    role: String(message.role),
+    createdAt: new Date(message.createdAt)
+  }));
 }
 
 export async function voteMessage({
