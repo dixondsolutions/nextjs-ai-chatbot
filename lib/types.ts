@@ -1,4 +1,8 @@
-import type { ToolInvocation, MessageAnnotation } from 'ai';
+import type { ToolInvocation } from 'ai';
+
+export interface MessageAnnotation {
+  messageIdFromServer?: string;
+}
 
 export interface Message {
   id: string;
