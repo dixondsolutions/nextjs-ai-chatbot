@@ -5,12 +5,10 @@ import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 
-interface PageProps {
-  params: { id: string };
-}
-
-export default async function ChatPage({ params }: PageProps) {
+export default async function ChatPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await auth();
+  
   if (!session?.user) {
     redirect('/login');
   }
