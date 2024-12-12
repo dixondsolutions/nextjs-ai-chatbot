@@ -21,11 +21,14 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
     notFound();
   }
 
+  // Default to Claude if no model is set
+  const defaultModel = 'claude-3-5-sonnet';
+
   return (
     <Chat 
       id={params.id} 
       initialMessages={convertToUIMessages(messagesFromDb)}
-      selectedModelId={chat.modelId || 'claude-3-5-sonnet'} 
+      selectedModelId={chat.modelId ?? defaultModel}
       selectedVisibilityType={chat.visibility || 'private'}
       isReadonly={chat.userId !== session.user.id}
     />

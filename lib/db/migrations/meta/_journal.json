@@ -43,6 +43,13 @@
       "when": 1733403031016,
       "tag": "0005_drop_remaining_editor_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1733403031017,
+      "tag": "0006_add_model_id",
+      "breakpoints": true
     }
   ]
 }

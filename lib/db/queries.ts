@@ -209,3 +209,21 @@ export async function getMessageById({ id }: { id: string }) {
     throw error;
   }
 }
+
+export async function updateChatModel({
+  chatId,
+  modelId,
+}: {
+  chatId: string;
+  modelId: string;
+}) {
+  try {
+    return await db
+      .update(chat)
+      .set({ modelId })
+      .where(eq(chat.id, chatId));
+  } catch (error) {
+    console.error('Failed to update chat model in database');
+    throw error;
+  }
+}

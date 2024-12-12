@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { deleteTrailingMessages, updateChatVisibility } from '@/app/(chat)/actions';
+import { deleteTrailingMessages, updateChatVisibility, updateChatModel } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -63,8 +63,15 @@ export function ChatHeader({
           <ModelSelector
             selectedModelId={selectedModelId}
             onChange={async (modelId) => {
-              // Handle model change
-              router.refresh();
+              try {
+                await updateChatModel({
+                  chatId,
+                  modelId,
+                });
+                router.refresh();
+              } catch (error) {
+                console.error('Failed to update model:', error);
+              }
             }}
           />
         )}
