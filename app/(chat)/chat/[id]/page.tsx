@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
+import { convertToUIMessages } from '@/lib/utils';
 
 export default async function ChatPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -13,7 +14,7 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
     redirect('/login');
   }
 
-  const messages = await getMessagesByChatId({ id: params.id });
+  const messagesFromDb = await getMessagesByChatId({ id: params.id });
   const chat = await getChatById({ id: params.id });
 
   if (!chat) {
@@ -23,7 +24,7 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
   return (
     <Chat 
       id={params.id} 
-      initialMessages={messages}
+      initialMessages={convertToUIMessages(messagesFromDb)}
       selectedModelId={chat.modelId || 'claude-3-5-sonnet'} 
       selectedVisibilityType={chat.visibility || 'private'}
       isReadonly={chat.userId !== session.user.id}
