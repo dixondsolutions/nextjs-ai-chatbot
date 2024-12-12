@@ -35,130 +35,150 @@ const weatherTools: AllowedTools[] = ['getWeather'];
 const allTools: AllowedTools[] = [...weatherTools];
 
 export async function POST(request: Request) {
-  const {
-    id,
-    messages,
-    modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
-    await request.json();
+  try {
+    const {
+      id,
+      messages,
+      modelId,
+    }: { id: string; messages: Array<Message>; modelId: string } =
+      await request.json();
 
-  console.log('[Chat Route] Processing request for model:', modelId);
+    console.log('[Chat Route] Processing request for model:', modelId);
 
-  const session = await auth();
+    const session = await auth();
 
-  if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+    if (!session?.user?.id) {
+      console.error('[Chat Route] Unauthorized: No session or user');
+      return new Response('Unauthorized', { status: 401 });
+    }
 
-  // Get model details from API
-  const modelsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/models`);
-  const providers = await modelsResponse.json();
-  const model = providers
-    .flatMap((provider: any) => provider.models)
-    .find((m: any) => m.id === modelId);
+    // Get model details from API
+    const modelsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/models`);
+    if (!modelsResponse.ok) {
+      console.error('[Chat Route] Failed to fetch models:', await modelsResponse.text());
+      return new Response('Failed to fetch models', { status: 500 });
+    }
 
-  if (!model) {
-    console.error('[Chat Route] Model not found:', modelId);
-    return new Response('Model not found', { status: 404 });
-  }
+    const providers = await modelsResponse.json();
+    const model = providers
+      .flatMap((provider: any) => provider.models)
+      .find((m: any) => m.id === modelId);
 
-  console.log('[Chat Route] Using model:', model.apiIdentifier);
+    if (!model) {
+      console.error('[Chat Route] Model not found:', modelId);
+      return new Response('Model not found', { status: 404 });
+    }
 
-  const coreMessages = convertToCoreMessages(messages);
-  const userMessage = getMostRecentUserMessage(coreMessages);
+    console.log('[Chat Route] Using model:', model.apiIdentifier);
 
-  if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
-  }
+    const coreMessages = convertToCoreMessages(messages);
+    const userMessage = getMostRecentUserMessage(coreMessages);
 
-  const chat = await getChatById({ id });
+    if (!userMessage) {
+      console.error('[Chat Route] No user message found');
+      return new Response('No user message found', { status: 400 });
+    }
 
-  if (!chat) {
-    const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title, modelId: model.id });
-  }
+    const chat = await getChatById({ id });
 
-  const userMessageId = generateUUID();
+    if (!chat) {
+      const title = await generateTitleFromUserMessage({ message: userMessage });
+      await saveChat({ 
+        id, 
+        userId: session.user.id, 
+        title, 
+        modelId: model.id 
+      });
+    }
 
-  await saveMessages({
-    messages: [
-      { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
-    ],
-  });
+    const userMessageId = generateUUID();
 
-  const streamingData = new StreamData();
+    await saveMessages({
+      messages: [
+        { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
+      ],
+    });
 
-  streamingData.append({
-    type: 'user-message-id',
-    content: userMessageId,
-  });
+    const streamingData = new StreamData();
 
-  const result = streamText({
-    model: customModel(model.apiIdentifier),
-    system: systemPrompt,
-    messages: coreMessages,
-    maxSteps: 5,
-    experimental_activeTools: allTools,
-    tools: {
-      getWeather: {
-        description: 'Get the current weather at a location',
-        parameters: z.object({
-          latitude: z.number(),
-          longitude: z.number(),
-        }),
-        execute: async ({ latitude, longitude }) => {
-          const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
-          );
+    streamingData.append({
+      type: 'user-message-id',
+      content: userMessageId,
+    });
 
-          const weatherData = await response.json();
-          return weatherData;
+    const result = streamText({
+      model: customModel(model.apiIdentifier),
+      system: systemPrompt,
+      messages: coreMessages,
+      maxSteps: 5,
+      experimental_activeTools: allTools,
+      tools: {
+        getWeather: {
+          description: 'Get the current weather at a location',
+          parameters: z.object({
+            latitude: z.number(),
+            longitude: z.number(),
+          }),
+          execute: async ({ latitude, longitude }) => {
+            const response = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
+            );
+
+            const weatherData = await response.json();
+            return weatherData;
+          },
         },
       },
-    },
-    onFinish: async ({ response }) => {
-      if (session.user?.id) {
-        try {
-          const responseMessagesWithoutIncompleteToolCalls =
-            sanitizeResponseMessages(response.messages);
+      onFinish: async ({ response }) => {
+        if (session.user?.id) {
+          try {
+            const responseMessagesWithoutIncompleteToolCalls =
+              sanitizeResponseMessages(response.messages);
 
-          await saveMessages({
-            messages: responseMessagesWithoutIncompleteToolCalls.map(
-              (message) => {
-                const messageId = generateUUID();
+            await saveMessages({
+              messages: responseMessagesWithoutIncompleteToolCalls.map(
+                (message) => {
+                  const messageId = generateUUID();
 
-                if (message.role === 'assistant') {
-                  streamingData.appendMessageAnnotation({
-                    messageIdFromServer: messageId,
-                  });
-                }
+                  if (message.role === 'assistant') {
+                    streamingData.appendMessageAnnotation({
+                      messageIdFromServer: messageId,
+                    });
+                  }
 
-                return {
-                  id: messageId,
-                  chatId: id,
-                  role: message.role,
-                  content: message.content,
-                  createdAt: new Date(),
-                };
-              },
-            ),
-          });
-        } catch (error) {
-          console.error('Failed to save chat');
+                  return {
+                    id: messageId,
+                    chatId: id,
+                    role: message.role,
+                    content: message.content,
+                    createdAt: new Date(),
+                  };
+                },
+              ),
+            });
+          } catch (error) {
+            console.error('Failed to save chat');
+          }
         }
-      }
 
-      streamingData.close();
-    },
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: 'stream-text',
-    },
-  });
+        streamingData.close();
+      },
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'stream-text',
+      },
+    });
 
-  return result.toDataStreamResponse({
-    data: streamingData,
-  });
+    return result.toDataStreamResponse({
+      data: streamingData,
+    });
+  } catch (error) {
+    console.error('[Chat Route] Error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal Server Error', details: error.message }), 
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(request: Request) {

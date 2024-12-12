@@ -48,7 +48,8 @@ export function Chat({
       mutate('/api/history');
     },
     onError: (error) => {
-      console.error('[Chat] Error:', error);
+      console.error('[Chat] Error details:', error);
+      // Optionally show error to user via toast/alert
     }
   });
 

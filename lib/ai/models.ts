@@ -2,24 +2,33 @@
 
 export interface Model {
   id: string;
-  label: string;
-  apiIdentifier: string;
-  description: string;
+  name: string;
+  models: Array<Model>;
 }
 
-export const models: Array<Model> = [
+export const models = [
   {
-    id: 'claude-3-5-sonnet',
-    label: 'Claude 3.5 Sonnet',
-    apiIdentifier: 'claude-3-5-sonnet-20241022',
-    description: 'Latest Claude model, best for complex tasks',
+    id: 'anthropic',
+    name: 'Anthropic',
+    models: [
+      {
+        id: 'claude-3-5-sonnet-20241022',
+        name: 'Claude 3.5 Sonnet',
+        apiIdentifier: 'claude-3-5-sonnet-20241022',
+      }
+    ]
   },
   {
-    id: 'gpt-4',
-    label: 'GPT-4',
-    apiIdentifier: 'gpt-4',
-    description: 'For complex, multi-step tasks',
-  },
-] as const;
+    id: 'openai',
+    name: 'OpenAI',
+    models: [
+      {
+        id: 'gpt-4-turbo',
+        name: 'GPT-4 Turbo',
+        apiIdentifier: 'gpt-4-turbo-preview',
+      }
+    ]
+  }
+];
 
-export const DEFAULT_MODEL_NAME: string = 'claude-3-5-sonnet';
+export const DEFAULT_MODEL_NAME = 'claude-3-5-sonnet-20241022';
