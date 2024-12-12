@@ -7,7 +7,7 @@ import { deleteTrailingMessages, updateChatVisibility, updateChatModel } from '@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { TrashIcon, EyeIcon } from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon } from './icons';
 import { ModelSelector } from './model-selector';
 import { VisibilitySelector, VisibilityType } from './visibility-selector';
 
@@ -90,8 +90,14 @@ export function ChatHeader({
               router.refresh();
             }}
           >
-            <Button variant="ghost" className="px-2 h-[34px]">
-              <EyeIcon className={selectedVisibilityType === 'private' ? 'opacity-50' : ''} />
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "px-2 h-[34px]",
+                selectedVisibilityType === 'private' && "opacity-50"
+              )}
+            >
+              <EyeIcon />
             </Button>
           </VisibilitySelector>
         )}
