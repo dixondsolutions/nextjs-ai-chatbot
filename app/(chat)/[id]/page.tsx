@@ -5,15 +5,11 @@ import { Chat } from '@/components/chat';
 import { getMessagesByChatId } from '@/lib/db/queries';
 import { Metadata } from 'next';
 
-// Use Next.js's built-in types
-export interface PageProps {
+export default async function ChatPage({
+  params,
+}: {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-// Explicitly type the component as a React Server Component
-export default async function ChatPage(props: PageProps) {
-  const { params } = props;
+}) {
   const session = await auth();
   
   if (!session?.user) {
@@ -33,9 +29,12 @@ export default async function ChatPage(props: PageProps) {
   );
 }
 
-// Use the same props type for metadata
-export async function generateMetadata(props: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
   return {
-    title: `Chat ${props.params.id}`,
+    title: `Chat ${params.id}`,
   };
 } 
