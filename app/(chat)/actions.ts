@@ -7,6 +7,7 @@ import { customModel } from '@/lib/ai';
 import {
   deleteMessagesByChatIdAfterTimestamp,
   updateChatVisiblityById,
+  getMessageById,
 } from '@/lib/db/queries';
 import { VisibilityType } from '@/components/visibility-selector';
 
