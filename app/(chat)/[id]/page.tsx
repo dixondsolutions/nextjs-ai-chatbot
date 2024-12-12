@@ -3,12 +3,18 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getMessagesByChatId } from '@/lib/db/queries';
+import { Metadata } from 'next';
 
+// Define the page params type
+type PageParams = {
+  id: string;
+}
+
+// Define the page component
 export default async function ChatPage({
   params,
 }: {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: PageParams;
 }) {
   const session = await auth();
   
@@ -29,11 +35,12 @@ export default async function ChatPage({
   );
 }
 
+// Define metadata generation
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
-}) {
+  params: PageParams;
+}): Promise<Metadata> {
   return {
     title: `Chat ${params.id}`,
   };
