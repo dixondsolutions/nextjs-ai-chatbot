@@ -42,6 +42,8 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
+  console.log('[Chat Route] Received request for model:', modelId);
+
   const session = await auth();
 
   if (!session || !session.user || !session.user.id) {
@@ -51,8 +53,11 @@ export async function POST(request: Request) {
   const model = models.find((model) => model.id === modelId);
 
   if (!model) {
+    console.error('[Chat Route] Model not found:', modelId);
     return new Response('Model not found', { status: 404 });
   }
+
+  console.log('[Chat Route] Using model identifier:', model.apiIdentifier);
 
   const coreMessages = convertToCoreMessages(messages);
   const userMessage = getMostRecentUserMessage(coreMessages);
