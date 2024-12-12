@@ -1,19 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useWindowSize } from 'usehooks-ts';
+import { useState } from 'react';
 
-import { ModelSelector } from '@/components/model-selector';
-import { SidebarToggle } from '@/components/sidebar-toggle';
+import { deleteTrailingMessages, updateChatVisibility } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, VercelIcon } from './icons';
-import { useSidebar } from './ui/sidebar';
-import { memo } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { cn } from '@/lib/utils';
 
-function PureChatHeader({
+import { DeleteIcon, VisibilityIcon } from './icons';
+import { ModelSelector } from './model-selector';
+import { VisibilitySelector, VisibilityType } from './visibility-selector';
+
+export function ChatHeader({
   chatId,
   selectedModelId,
   selectedVisibilityType,
@@ -25,52 +23,72 @@ function PureChatHeader({
   isReadonly: boolean;
 }) {
   const router = useRouter();
-  const { open } = useSidebar();
-
-  const { width: windowWidth } = useWindowSize();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   return (
-    <header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
-      <SidebarToggle />
+    <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center justify-between px-4 py-2 border-b">
+      <div className="flex flex-row gap-2 items-center">
+        {!isReadonly && (
+          <Button
+            variant="ghost"
+            className="px-2 h-[34px]"
+            onClick={async () => {
+              setIsDeleting(true);
 
-      {(!open || windowWidth < 768) && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
-              onClick={() => {
+              try {
+                await fetch(`/api/chat?id=${chatId}`, {
+                  method: 'DELETE',
+                });
+
                 router.push('/');
-                router.refresh();
-              }}
-            >
-              <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
+              } catch (error) {
+                console.error(error);
+              } finally {
+                setIsDeleting(false);
+              }
+            }}
+            disabled={isDeleting}
+          >
+            <DeleteIcon />
+          </Button>
+        )}
+      </div>
+
+      <div
+        className={cn(
+          'flex flex-row gap-2 items-center order-2 md:order-1 w-full md:w-fit',
+        )}
+      >
+        {!isReadonly && (
+          <ModelSelector
+            selectedModelId={selectedModelId}
+            onChange={async (modelId) => {
+              // Handle model change
+              router.refresh();
+            }}
+          />
+        )}
+      </div>
+
+      <div className="flex flex-row gap-2 items-center order-3">
+        {!isReadonly && (
+          <VisibilitySelector
+            selectedVisibilityType={selectedVisibilityType}
+            onSelect={async (visibility) => {
+              await updateChatVisibility({
+                chatId,
+                visibility,
+              });
+
+              router.refresh();
+            }}
+          >
+            <Button variant="ghost" className="px-2 h-[34px]">
+              <VisibilityIcon type={selectedVisibilityType} />
             </Button>
-          </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
-      )}
-
-      {!isReadonly && (
-        <ModelSelector
-          selectedModelId={selectedModelId}
-          className="order-1 md:order-2"
-        />
-      )}
-
-      {!isReadonly && (
-        <VisibilitySelector
-          chatId={chatId}
-          selectedVisibilityType={selectedVisibilityType}
-          className="order-1 md:order-3"
-        />
-      )}
-
-    </header>
+          </VisibilitySelector>
+        )}
+      </div>
+    </div>
   );
 }
-
-export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
-  return prevProps.selectedModelId === nextProps.selectedModelId;
-});
