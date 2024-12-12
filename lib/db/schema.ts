@@ -28,6 +28,7 @@ export const chat = pgTable('Chat', {
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
+  modelId: varchar('modelId', { length: 64 }).notNull().default('claude-3-5-sonnet')
 });
 
 export type Chat = InferSelectModel<typeof chat>;
