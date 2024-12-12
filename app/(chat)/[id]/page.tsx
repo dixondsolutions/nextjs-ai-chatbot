@@ -5,21 +5,24 @@ import { Chat } from '@/components/chat';
 import { getMessagesByChatId } from '@/lib/db/queries';
 import { Metadata } from 'next';
 
-// Remove custom type and use inline type
-export default async function ChatPage(props: {
+// Add Next.js specific types
+type ChatPageProps = {
   params: { id: string };
-}) {
+  searchParams: Record<string, string | string[] | undefined>;
+};
+
+export default async function ChatPage({ params }: ChatPageProps) {
   const session = await auth();
   
   if (!session?.user) {
     redirect('/login');
   }
 
-  const messages = await getMessagesByChatId({ id: props.params.id }) as Message[];
+  const messages = await getMessagesByChatId({ id: params.id }) as Message[];
 
   return (
     <Chat 
-      id={props.params.id} 
+      id={params.id} 
       initialMessages={messages}
       selectedModelId="claude-3-sonnet"
       selectedVisibilityType="private"
@@ -28,10 +31,8 @@ export default async function ChatPage(props: {
   );
 }
 
-export async function generateMetadata(props: {
-  params: { id: string };
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: ChatPageProps): Promise<Metadata> {
   return {
-    title: `Chat ${props.params.id}`,
+    title: `Chat ${params.id}`,
   };
 } 
