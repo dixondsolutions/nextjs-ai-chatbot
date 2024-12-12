@@ -1,53 +1,72 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ModelProvider } from '@/app/(chat)/api/models/route';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-export function ModelSelector({
-  selectedModelId,
-  onChange
-}: {
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+
+import { ChevronDownIcon } from './icons';
+
+interface ModelSelectorProps {
   selectedModelId: string;
   onChange: (modelId: string) => void;
-}) {
-  const [providers, setProviders] = useState<ModelProvider[]>([]);
-  const [loading, setLoading] = useState(true);
+}
+
+export function ModelSelector({ selectedModelId, onChange }: ModelSelectorProps) {
+  const [providers, setProviders] = useState<Array<{
+    id: string;
+    name: string;
+    models: Array<{
+      id: string;
+      name: string;
+      apiIdentifier: string;
+    }>;
+  }>>([]);
 
   useEffect(() => {
-    async function fetchModels() {
+    const fetchModels = async () => {
       try {
         const response = await fetch('/api/models');
         const data = await response.json();
         setProviders(data);
       } catch (error) {
         console.error('Failed to fetch models:', error);
-      } finally {
-        setLoading(false);
       }
-    }
+    };
 
     fetchModels();
   }, []);
 
-  if (loading) {
-    return <div>Loading models...</div>;
-  }
-
   return (
     <Select value={selectedModelId} onValueChange={onChange}>
-      <SelectTrigger>
-        <SelectValue placeholder="Select a model" />
+      <SelectTrigger
+        className={cn(
+          'w-fit gap-2 data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+        )}
+      >
+        <SelectValue defaultValue={selectedModelId} />
+        <ChevronDownIcon />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent align="start" className="min-w-[300px]">
         {providers.map((provider) => (
           <div key={provider.id}>
-            <div className="px-2 py-1.5 text-sm font-semibold">{provider.name}</div>
-            {provider.models.map((model) => (
-              <SelectItem key={model.id} value={model.id}>
-                {model.label}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              <SelectLabel className="text-xs">{provider.name}</SelectLabel>
+              {provider.models.map((model) => (
+                <SelectItem key={model.id} value={model.id}>
+                  {model.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </div>
         ))}
       </SelectContent>
