@@ -4,15 +4,16 @@ import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { getMessagesByChatId } from '@/lib/db/queries';
 
-type Props = {
-  params: { id: string }
-  searchParams: { [key: string]: string | string[] | undefined }
+interface GenerateMetadata {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export default async function ChatPage({
   params,
-  searchParams,
-}: Props) {
+}: {
+  params: { id: string };
+}) {
   const session = await auth();
   
   if (!session?.user) {
