@@ -5,18 +5,25 @@ import { Chat } from '@/components/chat';
 import { getMessagesByChatId } from '@/lib/db/queries';
 import { Metadata } from 'next';
 
+async function getChatData(id: string): Promise<Message[]> {
+  return await getMessagesByChatId({ id }) as Message[];
+}
+
+async function getPageSession() {
+  const session = await auth();
+  if (!session?.user) {
+    redirect('/login');
+  }
+  return session;
+}
+
 export default async function ChatPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const session = await auth();
-  
-  if (!session?.user) {
-    redirect('/login');
-  }
-
-  const messages = await getMessagesByChatId({ id: params.id }) as Message[];
+  await getPageSession();
+  const messages = await getChatData(params.id);
 
   return (
     <Chat 
