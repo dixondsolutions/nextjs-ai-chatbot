@@ -7,7 +7,7 @@ import { deleteTrailingMessages, updateChatVisibility } from '@/app/(chat)/actio
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { TrashIcon, EyeIcon, EyeOffIcon } from './icons';
+import { TrashIcon, EyeIcon } from './icons';
 import { ModelSelector } from './model-selector';
 import { VisibilitySelector, VisibilityType } from './visibility-selector';
 
@@ -84,11 +84,7 @@ export function ChatHeader({
             }}
           >
             <Button variant="ghost" className="px-2 h-[34px]">
-              {selectedVisibilityType === 'public' ? (
-                <EyeIcon />
-              ) : (
-                <EyeOffIcon />
-              )}
+              <EyeIcon className={selectedVisibilityType === 'private' ? 'opacity-50' : ''} />
             </Button>
           </VisibilitySelector>
         )}
