@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
-  console.log('[Chat Route] Received request for model:', modelId);
+  console.log('[Chat Route] Processing request for model:', modelId);
 
   const session = await auth();
 
@@ -50,14 +50,19 @@ export async function POST(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const model = models.find((model) => model.id === modelId);
+  // Get model details from API
+  const modelsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/models`);
+  const providers = await modelsResponse.json();
+  const model = providers
+    .flatMap((provider: any) => provider.models)
+    .find((m: any) => m.id === modelId);
 
   if (!model) {
     console.error('[Chat Route] Model not found:', modelId);
     return new Response('Model not found', { status: 404 });
   }
 
-  console.log('[Chat Route] Using model identifier:', model.apiIdentifier);
+  console.log('[Chat Route] Using model:', model.apiIdentifier);
 
   const coreMessages = convertToCoreMessages(messages);
   const userMessage = getMostRecentUserMessage(coreMessages);

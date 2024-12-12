@@ -73,6 +73,7 @@ export function ChatHeader({
       <div className="flex flex-row gap-2 items-center order-3">
         {!isReadonly && (
           <VisibilitySelector
+            chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
             onSelect={async (visibility) => {
               await updateChatVisibility({
