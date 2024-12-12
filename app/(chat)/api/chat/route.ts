@@ -174,8 +174,19 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('[Chat Route] Error:', error);
+    let errorMessage = 'Unknown error occurred';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+
     return new Response(
-      JSON.stringify({ error: 'Internal Server Error', details: error.message }), 
+      JSON.stringify({ 
+        error: 'Internal Server Error', 
+        details: errorMessage 
+      }), 
       { status: 500 }
     );
   }
