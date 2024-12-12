@@ -39,6 +39,7 @@ export function Chat({
     isLoading,
     stop,
     reload,
+    error
   } = useChat({
     id,
     body: { id, modelId: selectedModelId },
@@ -46,6 +47,9 @@ export function Chat({
     onFinish: () => {
       mutate('/api/history');
     },
+    onError: (error) => {
+      console.error('[Chat] Error:', error);
+    }
   });
 
   const { data: votes } = useSWR<Array<Vote>>(
