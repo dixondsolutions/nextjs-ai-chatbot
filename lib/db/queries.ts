@@ -111,11 +111,17 @@ export async function saveMessages({ messages }: { messages: Array<Message> }) {
 
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
-    return await db
+    const messages = await db
       .select()
       .from(message)
       .where(eq(message.chatId, id))
       .orderBy(asc(message.createdAt));
+
+    // Convert the database messages to AI SDK Message format
+    return messages.map(msg => ({
+      ...msg,
+      content: msg.content as string, // Ensure content is typed as string
+    }));
   } catch (error) {
     console.error('Failed to get messages by chat id from database', error);
     throw error;

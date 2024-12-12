@@ -11,7 +11,6 @@ interface ExtendedSession extends Session {
 }
 
 export const {
-  handlers: { GET, POST },
   auth,
   signIn,
   signOut,
@@ -51,5 +50,8 @@ export const {
 
       return session;
     },
+  },
+  pages: {
+    signIn: '/login',
   },
 });
