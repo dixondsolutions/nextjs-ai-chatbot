@@ -9,23 +9,17 @@ export interface Model {
 
 export const models: Array<Model> = [
   {
-    id: 'claude-3-sonnet',
+    id: 'claude-3-5-sonnet',
     label: 'Claude 3.5 Sonnet',
     apiIdentifier: 'claude-3-5-sonnet-20241022',
     description: 'Latest Claude model, best for complex tasks',
   },
   {
-    id: 'gpt-4o-mini',
-    label: 'GPT 4o mini',
-    apiIdentifier: 'gpt-4o-mini',
-    description: 'Small model for fast, lightweight tasks',
-  },
-  {
-    id: 'gpt-4o',
-    label: 'GPT 4o',
-    apiIdentifier: 'gpt-4o',
+    id: 'gpt-4',
+    label: 'GPT-4',
+    apiIdentifier: 'gpt-4',
     description: 'For complex, multi-step tasks',
   },
 ] as const;
 
-export const DEFAULT_MODEL_NAME: string = 'claude-3-sonnet';
+export const DEFAULT_MODEL_NAME: string = 'claude-3-5-sonnet';
