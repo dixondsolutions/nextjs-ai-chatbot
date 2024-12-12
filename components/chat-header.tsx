@@ -82,7 +82,7 @@ export function ChatHeader({
           <VisibilitySelector
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
-            onSelect={async (visibility) => {
+            onSelect={async (visibility: VisibilityType) => {
               await updateChatVisibility({
                 chatId,
                 visibility,
