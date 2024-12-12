@@ -82,12 +82,11 @@ export function ChatHeader({
           <VisibilitySelector
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
-            onSelect={async (visibility: VisibilityType) => {
+            onSelect={async (newVisibility: VisibilityType) => {
               await updateChatVisibility({
                 chatId,
-                visibility,
+                visibility: newVisibility,
               });
-
               router.refresh();
             }}
           >
