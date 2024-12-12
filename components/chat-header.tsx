@@ -7,7 +7,7 @@ import { deleteTrailingMessages, updateChatVisibility, updateChatModel } from '@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { TrashIcon, EyeIcon, EyeOffIcon } from './icons';
+import { TrashIcon, EyeIcon } from './icons';
 import { ModelSelector } from './model-selector';
 import { VisibilitySelector, VisibilityType } from './visibility-selector';
 
